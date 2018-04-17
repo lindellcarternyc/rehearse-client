@@ -2,37 +2,25 @@ import * as React from 'react'
 import './App.css'
 
 // Components
-// import AddRehearsalForm from './components/add-rehearsal-form'
 import CreateCharactersForm from './components/create-characters-form'
-// import RehearsalTable from './components/rehearsal-table'
-
-// Types
-import { IRehearsal } from './types'
 
 // Mocks
-import { REHEARSALS } from './mock/RehearsalList'
-
-import database from './mock/database'
-
-// Utils
-// import * as utils from './utils'
+import { Database } from './mock/database'
 
 import { AppStep } from './app-steps'
 
 interface IAppState {
   characters: string[]
-  rehearsals: IRehearsal[]
   currentAppStep: AppStep
 }
 class App extends React.Component<{}, IAppState> {
-  private database = database
+  private database = Database.seed()
   constructor(props: {}) {
     super(props)
 
     this.state = {
       characters: [],
-      currentAppStep: AppStep.CREATE_CHARACTERS,
-      rehearsals: [...REHEARSALS],
+      currentAppStep: AppStep.SETUP_SCENES,
     }
   }
 
