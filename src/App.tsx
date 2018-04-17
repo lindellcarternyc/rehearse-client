@@ -3,6 +3,7 @@ import './App.css'
 
 // Components
 import AddRehearsalForm from './components/add-rehearsal-form'
+import CreateCharactersForm from './components/create-characters-form'
 import RehearsalTable from './components/rehearsal-table'
 
 // Types
@@ -15,32 +16,48 @@ import { REHEARSALS } from './mock/RehearsalList'
 import * as utils from './utils'
 
 interface IAppState {
-  showForm: boolean
+  characters: string[]
   rehearsals: IRehearsal[]
+  current?: 'Add Rehearsal' | 'Rehearsals' | 'Create Characters'
 }
 class App extends React.Component<{}, IAppState> {
   constructor(props: {}) {
     super(props)
 
     this.state = {
+      characters: [],
+      current: 'Create Characters',
       rehearsals: [...REHEARSALS],
-      showForm: false
     }
   }
   public render() {
     return (
       <div className="App">
-      {(() => {
-        if ( this.state.showForm ) {
-          return <AddRehearsalForm onSubmit={this.addRehearsal}/>
-        } else {
-          return (<RehearsalTable
-            rehearsals={this.state.rehearsals}
-          />)
-        }
-      })()}
+        {this.renderCurrent()}
       </div>
     )
+  }
+
+  private renderCurrent(): JSX.Element {
+    const { current, rehearsals } = this.state
+    switch ( current ) {
+      case 'Create Characters':
+        return(
+          <CreateCharactersForm createCharacters={this.createCharacters}/>
+        )
+      case 'Add Rehearsal':
+        return (
+          <AddRehearsalForm 
+            onSubmit={this.addRehearsal}
+          />
+        )
+      case 'Rehearsals':
+        return (
+          <RehearsalTable rehearsals={rehearsals} />
+        )
+      default:
+        return <div>{this.state.characters.length} Characters</div>
+    }
   }
 
   private addRehearsal = (rehearsal: IRehearsal) => {
@@ -67,6 +84,10 @@ class App extends React.Component<{}, IAppState> {
         }
       })
     }
+  }
+
+  private createCharacters = (characters: string[]) => {
+    this.setState({ characters, current: undefined})
   }
 }
 
