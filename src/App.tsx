@@ -2,9 +2,9 @@ import * as React from 'react'
 import './App.css'
 
 // Components
-import AddRehearsalForm from './components/add-rehearsal-form'
+// import AddRehearsalForm from './components/add-rehearsal-form'
 import CreateCharactersForm from './components/create-characters-form'
-import RehearsalTable from './components/rehearsal-table'
+// import RehearsalTable from './components/rehearsal-table'
 
 // Types
 import { IRehearsal } from './types'
@@ -12,82 +12,67 @@ import { IRehearsal } from './types'
 // Mocks
 import { REHEARSALS } from './mock/RehearsalList'
 
+import database from './mock/database'
+
 // Utils
-import * as utils from './utils'
+// import * as utils from './utils'
+
+import { AppStep } from './app-steps'
 
 interface IAppState {
   characters: string[]
   rehearsals: IRehearsal[]
-  current?: 'Add Rehearsal' | 'Rehearsals' | 'Create Characters'
+  currentAppStep: AppStep
 }
 class App extends React.Component<{}, IAppState> {
+  private database = database
   constructor(props: {}) {
     super(props)
 
     this.state = {
       characters: [],
-      current: 'Create Characters',
+      currentAppStep: AppStep.CREATE_CHARACTERS,
       rehearsals: [...REHEARSALS],
     }
   }
+
+  public componentDidMount() {
+    this.database.getCharacters().then(characters => {
+      this.setState({ characters })
+    }).catch(err => {
+      // tslint:disable-next-line:no-console
+      console.error(err)
+    })
+  }
+
   public render() {
     return (
       <div className="App">
-        {this.renderCurrent()}
+        {this.renderCurrentStep()}
       </div>
     )
   }
 
-  private renderCurrent(): JSX.Element {
-    const { current, rehearsals } = this.state
-    switch ( current ) {
-      case 'Create Characters':
-        return(
-          <CreateCharactersForm createCharacters={this.createCharacters}/>
-        )
-      case 'Add Rehearsal':
-        return (
-          <AddRehearsalForm 
-            onSubmit={this.addRehearsal}
-          />
-        )
-      case 'Rehearsals':
-        return (
-          <RehearsalTable rehearsals={rehearsals} />
-        )
+  private renderCurrentStep() {
+    const { currentAppStep } = this.state
+
+    switch ( currentAppStep ) {
+      case AppStep.CREATE_CHARACTERS:
+        return <CreateCharactersForm createCharacters={this.createCharacters} />
+      case AppStep.SETUP_SCENES:
+        return <div>Setup Scenes</div>
       default:
-        return <div>{this.state.characters.length} Characters</div>
-    }
-  }
-
-  private addRehearsal = (rehearsal: IRehearsal) => {
-    this.setState(({rehearsals}) => {
-      return {
-        rehearsals: rehearsals.concat(
-          this._formatRehearsal(rehearsal)
-        )
-      }
-    })
-  }
-
-  private _formatRehearsal(rehearsal: IRehearsal): IRehearsal {
-    const { schedule } = rehearsal
-
-    return {
-      ...rehearsal,
-      date: utils.formatDate(rehearsal.date),
-      schedule: schedule.map(item => {
-        return {
-          ...item,
-          endTime: utils.formatTime(item.endTime),
-          startTime: utils.formatTime(item.startTime),
-        }
-      })
+        return <div>ERROR</div>
     }
   }
 
   private createCharacters = (characters: string[]) => {
-    this.setState({ characters, current: undefined})
+    this.database.addCharacters(...characters)
+      .then(data => {
+        this.setState({ characters: data, currentAppStep: AppStep.SETUP_SCENES })
+      }).catch(err => {
+        throw err
+      })
   }
 }
 
