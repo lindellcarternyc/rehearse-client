@@ -1,31 +1,23 @@
 // Seeds
+import { ACTS } from './acts'
 import { CHARACTERS } from './characters'
 
-type ListenerArray = Array<() => void>
+// Types
+import { IAct } from '../types'
 
 export class Database {
   public static seed(): Database{
-    return new Database(CHARACTERS) 
+    return new Database(CHARACTERS, ACTS) 
   }
 
   constructor( 
     private characters: string[] = [],
-    private listeners: {
-      addCharacter: ListenerArray
-      addCharacters: ListenerArray
-      getCharacters: ListenerArray
-    } = {
-      addCharacter: [],
-      addCharacters: [],
-      getCharacters: []
-    }
+    private acts: { [title: string]: IAct } = { }
   ) {
 
   }
-  
   public getCharacters(): Promise<string[]> {
     return new Promise((resolve, reject) => {
-      this.listeners.getCharacters.forEach(l => l())
       resolve(this.characters)
     })
   }
@@ -33,7 +25,6 @@ export class Database {
   public addCharacter(character: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
       this.characters = this.characters.concat(character)
-      this.listeners.addCharacter.forEach(l => l())
       resolve(this.characters)
     })
   }
@@ -43,7 +34,6 @@ export class Database {
       const promises = characters.map(character => this.addCharacter(character))
       Promise.all(promises)
         .then(() => {
-          this.listeners.addCharacters.forEach(l => l())
           resolve(this.characters)
         }).catch(err => {
           throw err
@@ -51,14 +41,18 @@ export class Database {
     })
   }
 
-  public on(event: 'addCharacter' | 'addCharacters' | 'getCharacters' , callback: () => void) {
-    if ( event === 'addCharacter' ) {
-      this.listeners.addCharacter.push(callback)
-    } else if ( event === 'addCharacters' ) {
-      this.listeners.addCharacters.push(callback)
-    } else if ( event === 'getCharacters' ) {
-      this.listeners.getCharacters.push(callback)
+  public getActs(): Promise<{[title: string]: IAct}> {
+    return new Promise((resolve, reject) => {
+      resolve(this.acts)
+    })
+  }
+
+  public saveActs(acts: { [title: string]: IAct }): Promise<{[title: string]: IAct}> {
+    this.acts = {
+      ...this.acts,
+      ...acts
     }
+    return this.getActs()
   }
 }
 

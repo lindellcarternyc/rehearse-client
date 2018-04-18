@@ -9,7 +9,8 @@ const CHARACTERS = [
   'Men\'s Chorus',
   'Women\'s Chorus',
   'Male Dancers',
-  'Female Dancers'
+  'Female Dancers',
+  'Ethiopian Slaves'
 ]
 
 export { 

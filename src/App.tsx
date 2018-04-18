@@ -20,23 +20,31 @@ interface IAppState {
 }
 class App extends React.Component<{}, IAppState> {
   private database = Database.seed()
+
   constructor(props: {}) {
     super(props)
 
     this.state = {
       acts: { },
       characters: [],
-      currentAppStep: AppStep.SETUP_SCENES
+      currentAppStep: AppStep.DISPLAY_ACTS
     }
   }
 
   public componentDidMount() {
-    this.database.getCharacters().then(characters => {
-      this.setState({ characters })
-    }).catch(err => {
-      // tslint:disable-next-line:no-console
-      console.error(err)
-    })
+    const promises: [Promise<string[]>, Promise<{[title: string]: IAct}>] = [
+      this.database.getCharacters(),
+      this.database.getActs()
+    ]
+    Promise.all(promises)
+      .then(([characters, acts]) => {
+        this.setState({
+          acts, characters,
+        })
+      })
+      .catch(err => {
+        throw err
+      })
   }
 
   public render() {
@@ -72,8 +80,14 @@ class App extends React.Component<{}, IAppState> {
   }
 
   private saveActs = (acts: { [title: string]: IAct }) => {
-    
-    this.setState({ acts, currentAppStep: AppStep.DISPLAY_ACTS })
+    // tslint:disable-next-line:no-console
+    console.log('user wants to save')
+    this.database.saveActs(acts).then(data => {
+
+      this.setState({ acts: data, currentAppStep: AppStep.DISPLAY_ACTS })
+    }).catch(err => {
+      throw err
+    })
   }
 }
 
