@@ -1,4 +1,5 @@
 export enum AppStep {
   CREATE_CHARACTERS,
-  SETUP_SCENES
+  SETUP_SCENES,
+  DISPLAY_ACTS
 }

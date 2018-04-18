@@ -3,6 +3,7 @@ import './App.css'
 
 // Components
 import CreateCharactersForm from './components/create-characters-form'
+import DisplayActs from './components/display-acts'
 import SetupScenesForm from './components/setup-scenes-form'
 
 // Mocks
@@ -25,7 +26,7 @@ class App extends React.Component<{}, IAppState> {
     this.state = {
       acts: { },
       characters: [],
-      currentAppStep: AppStep.SETUP_SCENES,
+      currentAppStep: AppStep.SETUP_SCENES
     }
   }
 
@@ -54,6 +55,8 @@ class App extends React.Component<{}, IAppState> {
         return <CreateCharactersForm createCharacters={this.createCharacters} />
       case AppStep.SETUP_SCENES:
         return <SetupScenesForm characters={this.state.characters} onSubmit={this.saveActs} />
+      case AppStep.DISPLAY_ACTS:
+        return <DisplayActs acts={this.state.acts}/>
       default:
         return <div>ERROR</div>
     }
@@ -69,7 +72,8 @@ class App extends React.Component<{}, IAppState> {
   }
 
   private saveActs = (acts: { [title: string]: IAct }) => {
-    this.setState({ acts })
+    
+    this.setState({ acts, currentAppStep: AppStep.DISPLAY_ACTS })
   }
 }
 

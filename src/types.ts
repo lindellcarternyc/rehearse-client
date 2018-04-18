@@ -15,6 +15,7 @@ export interface IRehearsal {
 
 export interface IScene {
   title: string
+  characters: string[]
 }
 
 export interface IAct {

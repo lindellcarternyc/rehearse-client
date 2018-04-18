@@ -62,7 +62,7 @@ class AddActForm extends React.Component<IAddActFormProps, IAddActFormState> {
       return {
         scenes: {
           ...scenes,
-          [sceneTitle]: { title: sceneTitle }
+          [sceneTitle]: { title: sceneTitle, characters: [] }
         }
       }
     })
