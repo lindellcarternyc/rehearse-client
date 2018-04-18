@@ -3,13 +3,17 @@ import './App.css'
 
 // Components
 import CreateCharactersForm from './components/create-characters-form'
+import SetupScenesForm from './components/setup-scenes-form'
 
 // Mocks
 import { Database } from './mock/database'
 
+// Types
 import { AppStep } from './app-steps'
+import { IAct } from './types'
 
 interface IAppState {
+  acts: { [title: string]: IAct }
   characters: string[]
   currentAppStep: AppStep
 }
@@ -19,6 +23,7 @@ class App extends React.Component<{}, IAppState> {
     super(props)
 
     this.state = {
+      acts: { },
       characters: [],
       currentAppStep: AppStep.SETUP_SCENES,
     }
@@ -48,7 +53,7 @@ class App extends React.Component<{}, IAppState> {
       case AppStep.CREATE_CHARACTERS:
         return <CreateCharactersForm createCharacters={this.createCharacters} />
       case AppStep.SETUP_SCENES:
-        return <div>Setup Scenes</div>
+        return <SetupScenesForm characters={this.state.characters} onSubmit={this.saveActs} />
       default:
         return <div>ERROR</div>
     }
@@ -61,6 +66,10 @@ class App extends React.Component<{}, IAppState> {
       }).catch(err => {
         throw err
       })
+  }
+
+  private saveActs = (acts: { [title: string]: IAct }) => {
+    this.setState({ acts })
   }
 }
 

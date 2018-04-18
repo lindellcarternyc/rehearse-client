@@ -12,3 +12,12 @@ export interface IRehearsal {
   conflicts: string[]
   schedule: IRehearsalScheduleItem[]
 }
+
+export interface IScene {
+  title: string
+}
+
+export interface IAct {
+  title: string
+  scenes: { [title: string]: IScene }
+}
