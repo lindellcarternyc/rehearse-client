@@ -17,7 +17,7 @@ import { IActs, IScheduleItem } from '../../../types'
 import { ICreateItemAction, IEditItemAction,  ItemActionType } from '../types'
 
 interface ICreateEditItemProps {
-  action?: ItemActionType
+  action: ItemActionType
   acts: IActs
   cancel: () => void
 }

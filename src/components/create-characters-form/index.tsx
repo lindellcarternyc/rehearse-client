@@ -8,7 +8,7 @@ import {
   Message
 } from 'semantic-ui-react'
 
-import CharacterList from './components/character-list'
+import CharacterList from '../character-list'
 
 // Types
 interface ICreateCharactersFormProps {
@@ -51,7 +51,7 @@ class CreateCharactersForm extends React.Component<ICreateCharactersFormProps, I
           <Header as='h4' content='Characters' />
           <CharacterList 
             characters={this.state.characters} 
-            removeCharacter={this.removeCharacter}
+            action={{callback: this.removeCharacter, text: 'Delete'}}
           />
           <FormGroup inline>
             <FormButton 
