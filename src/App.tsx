@@ -1,6 +1,8 @@
 import * as React from 'react'
 import './App.css'
 
+import { Button } from 'semantic-ui-react'
+
 // Components
 import CreateCharactersForm from './components/create-characters-form'
 import CreateRehearsal from './components/create-rehearsal'
@@ -68,7 +70,12 @@ class App extends React.Component<{}, IAppState> {
       case AppStep.SETUP_SCENES:
         return <SetupScenesForm characters={this.state.characters} onSubmit={this.saveActs} />
       case AppStep.DISPLAY_ACTS:
-        return <DisplayActs acts={this.state.acts}/>
+        return (
+          <>
+          <DisplayActs acts={this.state.acts}/>
+          <Button content='Next' onClick={this.goToCreateRehearsal}/>
+          </>
+        )
       case AppStep.CREATE_REHEARSAL:
         return <CreateRehearsal acts={this.state.acts} database={this.database} onSubmit={this.saveNewRehearsal}/>
       case AppStep.DISPLAY_NEW_REHEARSAL:
@@ -103,6 +110,10 @@ class App extends React.Component<{}, IAppState> {
 
   private saveNewRehearsal = (newRehearsal: IRehearsal) => {
     this.setState({ newRehearsal, currentAppStep: AppStep.DISPLAY_NEW_REHEARSAL })
+  }
+
+  private goToCreateRehearsal = () => {
+    this.setState({ currentAppStep: AppStep.CREATE_REHEARSAL })
   }
 }
 

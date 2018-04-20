@@ -10,12 +10,16 @@ import {
   Header
 } from 'semantic-ui-react'
 
-import CreateEditItem from './components/create-edit-item'
-import ItemPreview from './components/ItemPreview'
+import { ItemActionType } from './types'
+
+import ItemAction from './components/item-action'
+import ItemPreview from './components/item-preview'
 
 // Types
 import { Database } from '../../mock/database'
 import { IAct, IRehearsal, ISchedule, IScheduleItem } from '../../types'
+
+import { ItemActionMode } from './types'
 
 interface ICreateRehearsalProps {
   acts: { [key: string]: IAct }
@@ -26,7 +30,7 @@ interface ICreateRehearsalState {
   date: string
   location: string
   schedule: ISchedule
-  itemAction?: 'Create' | { id: string }
+  itemAction?: ItemActionType
 }
 class CreateRehearsal extends React.Component<ICreateRehearsalProps, ICreateRehearsalState> {
   private static newItemId: string = guid()
@@ -58,7 +62,14 @@ class CreateRehearsal extends React.Component<ICreateRehearsalProps, ICreateRehe
             value={this.state.location}
           />
           {this.renderPreviews()}
-          {this.renderItemAction()}
+          <ItemAction 
+            action={this.state.itemAction} 
+            onClickCancel={this.onClickCancelItemAction}
+            onClickCreateItem={this.createItem}
+            onClickEditItem={this.saveEditItem}
+            onClickNewItem={this.onClickNewItem}
+            acts={this.props.acts}
+          />
           <br />
           <FormGroup inline>
             <Button content='Save Rehearsal' disabled={!this.isValid} onClick={this.onClickSaveRehearsal}/>
@@ -68,40 +79,6 @@ class CreateRehearsal extends React.Component<ICreateRehearsalProps, ICreateRehe
         </Form>
       </>
     )
-  }
-
-  // Render helpers
-  private renderItemAction() {
-    const { itemAction } = this.state
-    if ( itemAction === undefined ) {
-      return (
-        <div><Button content='New Item' onClick={this.onClickNewItem}/></div>
-      )
-    } else if ( itemAction === 'Create' ) {
-      return (
-        <CreateEditItem 
-          mode='Create'
-          id={CreateRehearsal.newItemId}
-          createItem={this.createItem}
-          acts={this.props.acts}
-          database={this.props.database}
-          cancel={this.onClickCancelItemAction}
-        />
-      )
-    } else {
-      const { id } = itemAction
-      const item = this.state.schedule[id]
-      return (
-        <CreateEditItem 
-          mode='Edit'
-          item={item}
-          editItem={this.saveEditItem}
-          acts={this.props.acts}
-          database={this.props.database}
-          cancel={this.onClickCancelItemAction}
-        />
-      )
-    }
   }
 
   private renderPreviews() {
@@ -132,7 +109,12 @@ class CreateRehearsal extends React.Component<ICreateRehearsalProps, ICreateRehe
 
   // Click handlers
   private onClickNewItem = (evt: React.SyntheticEvent<HTMLButtonElement>) => {
-    this.setState({ itemAction: 'Create' })
+    this.setState({
+      itemAction: {
+        id: CreateRehearsal.newItemId,
+        mode: ItemActionMode.CREATE
+      }
+    })
   }
 
   private onClickCancelItemAction = () => {
@@ -140,7 +122,14 @@ class CreateRehearsal extends React.Component<ICreateRehearsalProps, ICreateRehe
   }
 
   private onClickEdit = (id: string) => {
-    this.setState({ itemAction: { id }})
+    this.setState(({ schedule, itemAction}) => {
+      return {
+        itemAction: {
+          item: schedule[id],
+          mode: ItemActionMode.EDIT
+        }
+      }
+    })
   }
 
   private onClickSaveRehearsal = (evt: React.SyntheticEvent<HTMLElement>) => {
@@ -219,7 +208,7 @@ class CreateRehearsal extends React.Component<ICreateRehearsalProps, ICreateRehe
   // helpers
   private get isEditing(): boolean {
     const { itemAction } = this.state
-    return itemAction !== undefined && typeof itemAction !== 'string'
+    return itemAction !== undefined && itemAction.mode === 'Edit'
   }
 
   private get isValid(): boolean {

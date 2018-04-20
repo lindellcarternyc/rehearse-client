@@ -14,29 +14,25 @@ import SelectMaterialDropdown from './select-material-dropdown'
 // Types
 import { IActs, IScheduleItem } from '../../../types'
 
-// Connections
-import { Database } from '../../../mock/database'
+import { ICreateItemAction, IEditItemAction,  ItemActionType } from '../types'
 
 interface ICreateEditItemProps {
-  mode: 'Create' | 'Edit'
+  action?: ItemActionType
   acts: IActs
-  database: Database
   cancel: () => void
 }
 
 interface ICreateItemProps extends ICreateEditItemProps {
-  id: string
-  mode: 'Create'
+  action: ICreateItemAction
   createItem: (item: IScheduleItem) => void
 }
 interface IEditItemProps extends ICreateEditItemProps {
-  mode: 'Edit'
-  item: IScheduleItem
+  action: IEditItemAction
   editItem: (item: IScheduleItem) => void
 }
 
 type CreateEditItemProps = ICreateItemProps | IEditItemProps
-// type ICreateEditItemProps = ICreateItemProps | IEditItemProps
+
 interface ICreateEditItemState {
   id: string
   startTime: string
@@ -59,17 +55,17 @@ class CreateEditItem extends React.Component<CreateEditItemProps, ICreateEditIte
   }
 
   public componentDidMount() {
-    if ( this.props.mode === 'Create' ) {
+    if ( this.props.action.mode === 'Create' ) {
       this.setState({
         characters: [],
         endTime: '',
-        id: this.props.id,
+        id: this.props.action.id,
         material: '',
         startTime: ''
       })
-    } else if ( this.props.mode === 'Edit' ) {
+    } else if ( this.props.action.mode === 'Edit' ) {
       this.setState({
-        ...this.props.item
+        ...this.props.action.item
       })
     }
   }
@@ -77,7 +73,7 @@ class CreateEditItem extends React.Component<CreateEditItemProps, ICreateEditIte
   public render() {
     return(
       <Segment>
-        <Header as='h4' content={this.props.mode + ' Item'}/>
+        <Header as='h4' content={this.props.action.mode + ' Item'}/>
         <FormGroup inline>
           <Button content='Save' onClick={this.save} disabled={!this.isValid}/>
           <Button content='Reset' onClick={this.reset} />
@@ -114,47 +110,48 @@ class CreateEditItem extends React.Component<CreateEditItemProps, ICreateEditIte
   }
 
   private updateMaterial = (material: string) => {
-    this.getCharactersForMaterial(material)
-      .then(characters => {
-        this.setState({ material, characters })
-      })
-      .catch(err => {
-        throw err
-      })
+    const characters = this.getCharactersForMaterial(material)
+    this.setState({ material, characters })
   }
 
-  private getCharactersForMaterial(material: string): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      if ( material === 'Run Opera') {
-        resolve(['Tutti'])
-      } else if ( material.slice(0, 7) === 'Run Act') {
-        const actTitle = material.slice(4)
-        this.props.database.getCharactersForAct(actTitle)
-          .then(characters => {
-            resolve(characters)
+  private getCharactersForMaterial(material: string): string[]  {
+    if ( material === 'Run Opera') {
+      return ['Tutti']
+    } else if ( material.slice(0, 7) === 'Run Act' ) {
+      const actTitle = material.slice(4)
+      const act = this.props.acts[actTitle]
+      const scenes = act.scenes
+      const characters = Object.keys(scenes).reduce<string[]>(
+        (prevChars, currSceneId) => {
+          const currScene = scenes[currSceneId]
+          const currSceneCharacters = currScene.characters.filter(character => {
+            return prevChars.indexOf(character) === -1
           })
-          .catch(err => {
-            reject(err)
-          })
-      } else {
-        this.props.database.getCharactersForScene(material)
-          .then(characters => { resolve(characters)})
-          .catch(err => { throw err })
-      }
-    })
+          return [
+            ...prevChars,
+            ...currSceneCharacters
+          ]
+      }, [])
+      return characters
+    } else {
+      const actTitle = material.split(', ')[0]
+      const act = this.props.acts[actTitle]
+      const scene = act.scenes[material]
+      return scene.characters
+    }
   }
 
   private reset = () => {
-    if ( this.props.mode === 'Create' ) {
+    if ( this.props.action.mode === 'Create' ) {
       this.setState({
         characters: [],
         endTime: '',
         material: '',
         startTime: '',
       })
-    } else if ( this.props.mode === 'Edit') {
+    } else if ( this.props.action.mode === 'Edit') {
       this.setState({
-        ...this.props.item
+        ...this.props.action.item
       })
     }
   }
@@ -165,10 +162,10 @@ class CreateEditItem extends React.Component<CreateEditItemProps, ICreateEditIte
   }
 
   private save = (evt: React.SyntheticEvent<HTMLButtonElement>) => {
-    if ( this.props.mode === 'Create' ) {
-      this.props.createItem(this.state)
-    } else if ( this.props.mode === 'Edit' ) {
-      this.props.editItem(this.state)
+    if ( this.props.action.mode === 'Create' ) {
+      (this.props as ICreateItemProps).createItem(this.state)
+    } else if ( this.props.action.mode === 'Edit' ) {
+      (this.props as IEditItemProps).editItem(this.state)
     }
   }
 }
