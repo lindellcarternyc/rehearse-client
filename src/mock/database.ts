@@ -47,6 +47,56 @@ export class Database {
     })
   }
 
+  public getAct(title: string): Promise<IAct> {
+    return new Promise((resolve, reject) => {
+      const act = this.acts[title]
+      if ( act !== undefined ) {
+        resolve(act)
+      } else {
+        reject(`No Act with title {${title}}`)
+      }
+    })
+  }
+
+  public getCharactersForAct(actTitle: string): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      this.getAct(actTitle)
+        .then(act => {
+          const scenes = act.scenes
+          const characters = Object.keys(scenes)
+            .reduce<string[]>(
+              (chars, sceneTitle) => {
+                return [
+                  ...chars,
+                  ...scenes[sceneTitle].characters
+                ]
+              }
+            , [])
+              resolve(characters)
+        })
+        .catch(err => {
+          throw err
+        })
+    })
+  }
+
+  public getCharactersForScene(sceneTitle: string): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actTitle = sceneTitle.split(', ')[0]
+      this.getAct(actTitle)
+        .then(act => {
+          const scene = act.scenes[sceneTitle]
+          if (scene !== undefined ) {
+            resolve(scene.characters)
+          } else {
+            reject('No Scene with title ' + sceneTitle)
+          }
+        }).catch(err => {
+          throw err
+        })
+    })
+  }
+
   public saveActs(acts: { [title: string]: IAct }): Promise<{[title: string]: IAct}> {
     this.acts = {
       ...this.acts,

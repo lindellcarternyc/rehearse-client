@@ -3,7 +3,9 @@ import './App.css'
 
 // Components
 import CreateCharactersForm from './components/create-characters-form'
+import CreateRehearsal from './components/create-rehearsal'
 import DisplayActs from './components/display-acts'
+import PreviewRehearsal from './components/PreviewRehearsal'
 import SetupScenesForm from './components/setup-scenes-form'
 
 // Mocks
@@ -11,15 +13,16 @@ import { Database } from './mock/database'
 
 // Types
 import { AppStep } from './app-steps'
-import { IAct } from './types'
+import { IAct, IRehearsal } from './types'
 
 interface IAppState {
   acts: { [title: string]: IAct }
   characters: string[]
   currentAppStep: AppStep
+  newRehearsal?: IRehearsal
 }
 class App extends React.Component<{}, IAppState> {
-  private database = Database.seed()
+  private database = new Database()
 
   constructor(props: {}) {
     super(props)
@@ -27,7 +30,8 @@ class App extends React.Component<{}, IAppState> {
     this.state = {
       acts: { },
       characters: [],
-      currentAppStep: AppStep.DISPLAY_ACTS
+      currentAppStep: AppStep.CREATE_CHARACTERS,
+      newRehearsal: undefined
     }
   }
 
@@ -65,6 +69,13 @@ class App extends React.Component<{}, IAppState> {
         return <SetupScenesForm characters={this.state.characters} onSubmit={this.saveActs} />
       case AppStep.DISPLAY_ACTS:
         return <DisplayActs acts={this.state.acts}/>
+      case AppStep.CREATE_REHEARSAL:
+        return <CreateRehearsal acts={this.state.acts} database={this.database} onSubmit={this.saveNewRehearsal}/>
+      case AppStep.DISPLAY_NEW_REHEARSAL:
+        const newRehearsal = this.state.newRehearsal!
+        return (
+          <PreviewRehearsal {...newRehearsal} />
+        )
       default:
         return <div>ERROR</div>
     }
@@ -88,6 +99,10 @@ class App extends React.Component<{}, IAppState> {
     }).catch(err => {
       throw err
     })
+  }
+
+  private saveNewRehearsal = (newRehearsal: IRehearsal) => {
+    this.setState({ newRehearsal, currentAppStep: AppStep.DISPLAY_NEW_REHEARSAL })
   }
 }
 
