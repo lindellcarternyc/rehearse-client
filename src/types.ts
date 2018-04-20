@@ -1,16 +1,9 @@
-export interface IRehearsalScheduleItem {
-  startTime: string
-  endTime: string
-  material: string[]
-  people: string[]
-}
-
 export interface IRehearsal {
   date: string
   location: string
   notes: string[]
   conflicts: string[]
-  schedule: IRehearsalScheduleItem[]
+  schedule: ISchedule
 }
 
 export interface IScene {
@@ -21,4 +14,20 @@ export interface IScene {
 export interface IAct {
   title: string
   scenes: { [title: string]: IScene }
+}
+
+export interface IActs {
+  [title: string]: IAct
+}
+
+export interface IScheduleItem {
+  id: string
+  startTime: string
+  endTime: string
+  material: string
+  characters: string[]
+}
+
+export interface ISchedule {
+  [id: string]: IScheduleItem
 }

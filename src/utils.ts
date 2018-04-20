@@ -2,7 +2,7 @@
 import * as moment from 'moment'
 
 // Types
-import { IRehearsal } from './types'
+import { IRehearsal, ISchedule } from './types'
 
 /**
  * @param time A string in the format 'hh:mm' in 24 hour time
@@ -37,15 +37,41 @@ export const formatDate = (date: string): string => {
  * @returns IRehearsal formatted for display
  */
 export const formatRehearsal = (rehearsal: IRehearsal): IRehearsal => {
+  const date = formatDate(rehearsal.date)
+  // const schedule = Object.keys(rehearsal.schedule).map(id => {
+  //   const item = rehearsal.schedule[id]
+
+  //   return {
+  //     ...item,
+  //     endTime: formatTime(item.endTime),
+  //     startTime: formatTime(item.startTime),
+  //   }
+  // })
+
+  const schedule = Object.keys(rehearsal.schedule).reduce<ISchedule>(
+    (prevSchedule, currId) => {
+      const item = rehearsal.schedule[currId]
+      return { 
+        ...prevSchedule,
+        [item.id]: {
+          ...item,
+          endTime: formatTime(item.endTime),
+          startTime: formatTime(item.startTime)
+        }
+      }
+    }, {})
+
   return {
     ...rehearsal,
-    date: formatDate(rehearsal.date),
-    schedule: rehearsal.schedule.map(item => {
-      return {
-        ...item,
-        endTime: formatTime(item.endTime),
-        startTime: formatTime(item.startTime)
-      }
-    })
+    date,
+    schedule
   }
+}
+
+const s4 = (): string => {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+}
+
+export const guid = (): string => {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
 }
